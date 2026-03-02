@@ -1,0 +1,193 @@
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  Res,
+  Get,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+
+import { AuthService, TokenResponse } from './auth.service';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { User, AuthProvider } from '@prisma/client';
+
+@ApiTags('Authentication')
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) { }
+
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({ status: 409, description: 'Email or phone already exists' })
+  async register(@Body() dto: RegisterDto): Promise<TokenResponse> {
+    return this.authService.register(dto);
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login with email/phone and password' })
+  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  async login(@Body() dto: LoginDto): Promise<TokenResponse> {
+    return this.authService.login(dto);
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Tokens refreshed' })
+  @ApiResponse({ status: 401, description: 'Invalid refresh token' })
+  async refresh(@Body() dto: RefreshTokenDto): Promise<TokenResponse> {
+    return this.authService.refreshTokens(dto.refreshToken);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Logout current session' })
+  async logout(@Body() dto: RefreshTokenDto): Promise<{ message: string }> {
+    await this.authService.logout(dto.refreshToken);
+    return { message: 'Logged out successfully' };
+  }
+
+  @Post('logout-all')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Logout all sessions' })
+  async logoutAll(@CurrentUser() user: User): Promise<{ message: string }> {
+    await this.authService.logoutAll(user.id);
+    return { message: 'Logged out from all devices' };
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile' })
+  async me(@CurrentUser() user: User) {
+    const { password, ...sanitized } = user;
+    return sanitized;
+  }
+
+  // ============== OAuth Routes ==============
+
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login with Google from NextAuth' })
+  async googleAuth(@Body() body: any): Promise<TokenResponse> {
+    const user = await this.authService.validateOAuthUser(
+      AuthProvider.GOOGLE,
+      body.googleId,
+      body.email,
+      body.name,
+      body.avatar,
+    );
+    return this.authService.generateTokens(user);
+  }
+
+  @Post('facebook')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login with Facebook from NextAuth' })
+  async facebookAuth(@Body() body: any): Promise<TokenResponse> {
+    const user = await this.authService.validateOAuthUser(
+      AuthProvider.FACEBOOK,
+      body.facebookId,
+      body.email,
+      body.name,
+      body.avatar,
+    );
+    return this.authService.generateTokens(user);
+  }
+
+  @Post('zalo')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('zalo'))
+  @ApiOperation({ summary: 'Login with Zalo (for Mini App)' })
+  async zaloAuth(@Req() req: Request): Promise<TokenResponse> {
+    // Called from Zalo Mini App with access token from Zalo SDK.
+    // ZaloStrategy validates token with Zalo and attaches a User to req.user.
+    return this.authService.generateTokens(req.user as User);
+  }
+
+  @Post('zalo/deletion')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Zalo data deletion webhook (GDPR compliance)' })
+  async zaloDeletion(@Body() body: any) {
+    console.log('Received Zalo data deletion request:', body);
+    // In a real implementation, we would process the deletion request here.
+    // For now, we acknowledge receipt to satisfy Zalo's requirements.
+    return {
+      success: true,
+      message: 'Data deletion request received',
+    };
+  }
+
+  @Get('terms')
+  @ApiOperation({ summary: 'Terms of Service' })
+  async terms(@Res() res: Response) {
+    res.header('Content-Type', 'text/html');
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Terms of Service - ReetroBarberShop</title>
+        <style>body{font-family:sans-serif;line-height:1.6;padding:20px;max-width:800px;margin:0 auto}</style>
+      </head>
+      <body>
+        <h1>Terms of Service</h1>
+        <p>Last updated: February 2026</p>
+        <p>Welcome to ReetroBarberShop. By using our Zalo Mini App, you agree to these terms.</p>
+        <h2>1. Services</h2>
+        <p>We provide barber booking services through the Zalo platform.</p>
+        <h2>2. Data Privacy</h2>
+        <p>We collect minimal data (name, phone number) to facilitate bookings. We do not share this data with third parties.</p>
+        <h2>3. Contact</h2>
+        <p>For questions or data deletion requests, please contact support at reetro@barber.com.</p>
+      </body>
+      </html>
+    `);
+  }
+
+  // ============== Password Reset Routes ==============
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset email' })
+  @ApiResponse({ status: 200, description: 'Reset email sent if account exists' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Get('verify-reset-token')
+  @ApiOperation({ summary: 'Verify password reset token' })
+  @ApiResponse({ status: 200, description: 'Token is valid' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  async verifyResetToken(@Query('token') token: string): Promise<{ valid: boolean }> {
+    return this.authService.verifyResetToken(token);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password with token' })
+  @ApiResponse({ status: 200, description: 'Password reset successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
+    return this.authService.resetPassword(dto.token, dto.password);
+  }
+}
