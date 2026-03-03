@@ -13,7 +13,18 @@ async function bootstrap() {
 
   // Enable CORS cho Frontend
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        process.env.FRONTEND_URL,
+      ].filter(Boolean);
+      // Allow requests with no origin (mobile apps, curl, webhooks)
+      if (!origin || allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all for now during development
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

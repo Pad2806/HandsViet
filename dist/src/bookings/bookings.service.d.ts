@@ -6,8 +6,8 @@ export declare class BookingsService {
     create(dto: CreateBookingDto): Promise<{
         clinic: {
             name: string;
-            phone: string;
             address: string;
+            phone: string;
         };
         staff: ({
             user: {
@@ -15,15 +15,15 @@ export declare class BookingsService {
             };
         } & {
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            clinicId: string;
-            isActive: boolean;
             position: import("@prisma/client").$Enums.StaffPosition;
             bio: string | null;
             rating: number;
             totalReviews: number;
             userId: string;
+            clinicId: string;
         }) | null;
         services: ({
             service: {
@@ -38,10 +38,15 @@ export declare class BookingsService {
         })[];
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        clinicId: string;
+        staffId: string | null;
+        endTime: string;
         bookingCode: string;
+        customerId: string;
         date: Date;
         timeSlot: string;
-        endTime: string;
         totalDuration: number;
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         status: import("@prisma/client").$Enums.BookingStatus;
@@ -51,17 +56,12 @@ export declare class BookingsService {
         cancelReason: string | null;
         cancelledAt: Date | null;
         cancelledBy: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        customerId: string;
-        clinicId: string;
-        staffId: string | null;
     }>;
     findOne(id: string): Promise<{
         clinic: {
             name: string;
-            phone: string;
             address: string;
+            phone: string;
         };
         staff: ({
             user: {
@@ -70,35 +70,30 @@ export declare class BookingsService {
             };
         } & {
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            clinicId: string;
-            isActive: boolean;
             position: import("@prisma/client").$Enums.StaffPosition;
             bio: string | null;
             rating: number;
             totalReviews: number;
             userId: string;
+            clinicId: string;
         }) | null;
-        customer: {
-            name: string | null;
-            email: string | null;
-            phone: string | null;
-        };
         services: ({
             service: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                clinicId: string;
                 name: string;
                 description: string | null;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                order: number;
+                clinicId: string;
                 price: import("@prisma/client-runtime-utils").Decimal;
                 duration: number;
                 category: import("@prisma/client").$Enums.TreatmentCategory;
                 image: string | null;
-                isActive: boolean;
-                order: number;
             };
         } & {
             id: string;
@@ -107,13 +102,18 @@ export declare class BookingsService {
             serviceId: string;
             bookingId: string;
         })[];
+        customer: {
+            name: string | null;
+            phone: string | null;
+            email: string | null;
+        };
         payments: {
             id: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
-            createdAt: Date;
-            updatedAt: Date;
             bankCode: string | null;
             bankAccount: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
             bookingId: string;
             amount: import("@prisma/client-runtime-utils").Decimal;
             method: import("@prisma/client").$Enums.PaymentMethod;
@@ -126,10 +126,15 @@ export declare class BookingsService {
         }[];
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        clinicId: string;
+        staffId: string | null;
+        endTime: string;
         bookingCode: string;
+        customerId: string;
         date: Date;
         timeSlot: string;
-        endTime: string;
         totalDuration: number;
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         status: import("@prisma/client").$Enums.BookingStatus;
@@ -139,17 +144,12 @@ export declare class BookingsService {
         cancelReason: string | null;
         cancelledAt: Date | null;
         cancelledBy: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        customerId: string;
-        clinicId: string;
-        staffId: string | null;
     }>;
     findByCode(code: string): Promise<{
         clinic: {
             name: string;
-            phone: string;
             address: string;
+            phone: string;
         };
         staff: ({
             user: {
@@ -158,35 +158,30 @@ export declare class BookingsService {
             };
         } & {
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            clinicId: string;
-            isActive: boolean;
             position: import("@prisma/client").$Enums.StaffPosition;
             bio: string | null;
             rating: number;
             totalReviews: number;
             userId: string;
+            clinicId: string;
         }) | null;
-        customer: {
-            name: string | null;
-            email: string | null;
-            phone: string | null;
-        };
         services: ({
             service: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                clinicId: string;
                 name: string;
                 description: string | null;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                order: number;
+                clinicId: string;
                 price: import("@prisma/client-runtime-utils").Decimal;
                 duration: number;
                 category: import("@prisma/client").$Enums.TreatmentCategory;
                 image: string | null;
-                isActive: boolean;
-                order: number;
             };
         } & {
             id: string;
@@ -195,13 +190,18 @@ export declare class BookingsService {
             serviceId: string;
             bookingId: string;
         })[];
+        customer: {
+            name: string | null;
+            phone: string | null;
+            email: string | null;
+        };
         payments: {
             id: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
-            createdAt: Date;
-            updatedAt: Date;
             bankCode: string | null;
             bankAccount: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
             bookingId: string;
             amount: import("@prisma/client-runtime-utils").Decimal;
             method: import("@prisma/client").$Enums.PaymentMethod;
@@ -214,10 +214,15 @@ export declare class BookingsService {
         }[];
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        clinicId: string;
+        staffId: string | null;
+        endTime: string;
         bookingCode: string;
+        customerId: string;
         date: Date;
         timeSlot: string;
-        endTime: string;
         totalDuration: number;
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         status: import("@prisma/client").$Enums.BookingStatus;
@@ -227,11 +232,6 @@ export declare class BookingsService {
         cancelReason: string | null;
         cancelledAt: Date | null;
         cancelledBy: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        customerId: string;
-        clinicId: string;
-        staffId: string | null;
     }>;
     findByCustomer(customerId: string): Promise<({
         clinic: {
@@ -243,15 +243,15 @@ export declare class BookingsService {
             };
         } & {
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            clinicId: string;
-            isActive: boolean;
             position: import("@prisma/client").$Enums.StaffPosition;
             bio: string | null;
             rating: number;
             totalReviews: number;
             userId: string;
+            clinicId: string;
         }) | null;
         services: ({
             service: {
@@ -266,10 +266,15 @@ export declare class BookingsService {
         })[];
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        clinicId: string;
+        staffId: string | null;
+        endTime: string;
         bookingCode: string;
+        customerId: string;
         date: Date;
         timeSlot: string;
-        endTime: string;
         totalDuration: number;
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         status: import("@prisma/client").$Enums.BookingStatus;
@@ -279,11 +284,6 @@ export declare class BookingsService {
         cancelReason: string | null;
         cancelledAt: Date | null;
         cancelledBy: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        customerId: string;
-        clinicId: string;
-        staffId: string | null;
     })[]>;
     private calculateEndTime;
     private generateBookingCode;

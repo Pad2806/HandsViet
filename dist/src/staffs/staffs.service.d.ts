@@ -10,8 +10,8 @@ export declare class StaffsService {
         };
         schedules: {
             id: string;
-            dayOfWeek: number;
             staffId: string;
+            dayOfWeek: number;
             startTime: string;
             endTime: string;
             isOff: boolean;
@@ -21,12 +21,12 @@ export declare class StaffsService {
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        clinicId: string;
         position: import("@prisma/client").$Enums.StaffPosition;
         bio: string | null;
         rating: number;
         totalReviews: number;
         userId: string;
+        clinicId: string;
     })[]>;
     findOne(id: string): Promise<{
         user: {
@@ -42,8 +42,8 @@ export declare class StaffsService {
         };
         schedules: {
             id: string;
-            dayOfWeek: number;
             staffId: string;
+            dayOfWeek: number;
             startTime: string;
             endTime: string;
             isOff: boolean;
@@ -53,12 +53,12 @@ export declare class StaffsService {
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        clinicId: string;
         position: import("@prisma/client").$Enums.StaffPosition;
         bio: string | null;
         rating: number;
         totalReviews: number;
         userId: string;
+        clinicId: string;
     }>;
     getAvailableSlots(staffId: string, date: string): Promise<{
         available: boolean;

@@ -16,11 +16,11 @@ export declare class ServicesController {
         createdAt: Date;
         updatedAt: Date;
         order: number;
+        clinicId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
         category: import("@prisma/client").$Enums.TreatmentCategory;
         image: string | null;
-        clinicId: string;
     })[]>;
     findOne(id: string): Promise<{
         clinic: {
@@ -36,10 +36,10 @@ export declare class ServicesController {
         createdAt: Date;
         updatedAt: Date;
         order: number;
+        clinicId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
         category: import("@prisma/client").$Enums.TreatmentCategory;
         image: string | null;
-        clinicId: string;
     }>;
 }

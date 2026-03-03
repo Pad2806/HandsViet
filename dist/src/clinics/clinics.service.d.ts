@@ -25,8 +25,8 @@ export declare class ClinicsService {
             };
             schedules: {
                 id: string;
-                dayOfWeek: number;
                 staffId: string;
+                dayOfWeek: number;
                 startTime: string;
                 endTime: string;
                 isOff: boolean;
@@ -36,12 +36,12 @@ export declare class ClinicsService {
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            clinicId: string;
             position: import("@prisma/client").$Enums.StaffPosition;
             bio: string | null;
             rating: number;
             totalReviews: number;
             userId: string;
+            clinicId: string;
         })[];
         services: {
             id: string;
@@ -51,11 +51,11 @@ export declare class ClinicsService {
             createdAt: Date;
             updatedAt: Date;
             order: number;
+            clinicId: string;
             price: import("@prisma/client-runtime-utils").Decimal;
             duration: number;
             category: import("@prisma/client").$Enums.TreatmentCategory;
             image: string | null;
-            clinicId: string;
         }[];
     } & {
         id: string;
@@ -92,8 +92,8 @@ export declare class ClinicsService {
             };
             schedules: {
                 id: string;
-                dayOfWeek: number;
                 staffId: string;
+                dayOfWeek: number;
                 startTime: string;
                 endTime: string;
                 isOff: boolean;
@@ -103,12 +103,12 @@ export declare class ClinicsService {
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            clinicId: string;
             position: import("@prisma/client").$Enums.StaffPosition;
             bio: string | null;
             rating: number;
             totalReviews: number;
             userId: string;
+            clinicId: string;
         })[];
         services: {
             id: string;
@@ -118,11 +118,11 @@ export declare class ClinicsService {
             createdAt: Date;
             updatedAt: Date;
             order: number;
+            clinicId: string;
             price: import("@prisma/client-runtime-utils").Decimal;
             duration: number;
             category: import("@prisma/client").$Enums.TreatmentCategory;
             image: string | null;
-            clinicId: string;
         }[];
     } & {
         id: string;
