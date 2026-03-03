@@ -1,52 +1,52 @@
-# ReetroBarberShop - Booking System
+# HandsVietReha - Hệ Thống Đặt Lịch Phục Hồi Chức Năng
 
-A modern barber shop booking system inspired by 30shine.com, built with a focus on mobile-first design and Zalo Mini App integration.
+Hệ thống đặt lịch phục hồi chức năng, lấy cảm hứng từ booking flow của ReetroBarberShop.
 
 ## 🚀 Features
 
-### Customer Features
+### Patient Features
 
-- 📱 Browse salons and services
-- 📅 Book appointments with preferred time slots
-- 👨‍💼 Choose preferred staff/stylist
-- 💳 Pay via VietQR (auto-confirmation via Sepay)
-- ⭐ Review and rate services
-- 🔔 Receive booking notifications
+- 📱 Tra cứu thông tin bằng số điện thoại
+- 📅 Đặt lịch khám và trị liệu phục hồi chức năng
+- 👨‍💼 Chọn chuyên viên vật lý trị liệu (Therapist)
+- 💳 Đặt cọc qua VietQR (tự động xác nhận qua Sepay)
+- 📝 Xem lịch sử khám và hồ sơ điều trị (các bài tập, tiến triển)
+- 🤖 Tương tác với AI Chatbot (Gemini) để nhận tư vấn sức khỏe
 
-### Salon Owner Features
+### Clinic Owner Features
 
-- 🏪 Manage salon information
-- 💇 Manage services and pricing
-- 👥 Manage staff and schedules
-- 📊 View booking calendar
-- 💰 Track payments and revenue
-- 📈 View analytics dashboard
+- 🏪 Quản lý thông tin phòng khám
+- 💇 Quản lý dịch vụ và bảng giá
+- 👥 Quản lý chuyên viên và lịch làm việc
+- 📊 Quản lý hồ sơ bệnh án (Treatment Records)
+- 💰 Theo dõi thanh toán và doanh thu
+- 📈 Dashboard thống kê
 
 ### Admin Features
 
-- 👑 Manage all salons and users
-- 📊 System-wide analytics
-- 🔧 Platform configuration
+- 👑 Quản lý hệ thống phòng khám
+- 📊 Thống kê toàn hệ thống
+- 🔧 Cấu hình hệ thống
 
 ## 🛠️ Tech Stack
 
 - **Monorepo**: Turborepo + pnpm
-- **Frontend**: Next.js 14 (App Router)
-- **Backend**: NestJS 10
-- **Database**: PostgreSQL 16 + Prisma
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Authentication**: Passport.js (Google, Facebook, Local, Zalo)
+- **Frontend**: Next.js 15 (App Router)
+- **Backend**: NestJS 11
+- **Database**: PostgreSQL 16 (Neon) + Prisma 6
+- **Styling**: Tailwind CSS v4 + shadcn/ui
+- **AI Chatbot**: Google Gemini Pro
 - **Payment**: VietQR + Sepay Webhook
-- **Zalo Mini App**: Native Zalo Framework
+- **State**: Zustand + TanStack Query v5
 
 ## 📁 Project Structure
 
 ```
-reetro-booking/
+handsviet-reha/
 ├── apps/
 │   ├── api/          # NestJS Backend API
-│   ├── web/          # Next.js Web App (coming soon)
-│   └── zalo/         # Zalo Mini App (coming soon)
+│   ├── web/          # Next.js Web App
+│   └── zalo/         # Zalo Mini App
 ├── packages/
 │   ├── shared/       # Shared types, constants, utilities
 │   └── brand/        # White-label branding configuration
