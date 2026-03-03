@@ -1,0 +1,414 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider     = "prisma-client-js"
+  output       = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============== ENUMS ==============
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+  ZALO
+}
+
+enum Role {
+  CUSTOMER
+  STAFF
+  CLINIC_OWNER
+  SUPER_ADMIN
+}
+
+enum TreatmentCategory {
+  LIGAMENT_REHABILITATION      // Phục Hồi Chức Năng Dây Chằng
+  COMPREHENSIVE_SPINE_CARE     // Chăm Sóc Cột Sống Toàn Diện
+  OFFICE_SPINE_SOLUTION        // Giải Pháp Cột Sống Văn Phòng
+  SPORTS_MEDICAL_SUPPORT       // Hỗ Trợ Y Tế Chuyên Nghiệp/Y Tế Thể Thao Giải Đấu
+  SPORTS_RELAXATION_MASSAGE    // Massage Thư Giãn Thể Thao
+  CONSULTATION                 // Khám Và Tư Vấn Phục Hồi Chức Năng Cơ Xương Khớp
+  SPORTS_INJURY_PREVENTION     // Phòng Ngừa Tái Chấn Thương Thể Thao
+  ELECTROTHERAPY               // Điện trị liệu
+  PHYSIOTHERAPY                // Y Học Vật Lí Trị Liệu
+  REHABILITATION               // Phục Hồi Chức Năng
+  MASSAGE                      // Massage
+  BEAUTY_CARE                  // Chăm Sóc Sắc Đẹp
+  SKIN_CARE                    // Chăm Sóc Da
+  COMBO
+  OTHER
+}
+
+enum StaffPosition {
+  THERAPIST
+  DOCTOR
+  RECEPTIONIST
+  MANAGER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  DEPOSIT_PAID
+  PAID
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  VIETQR
+}
+
+enum PaymentType {
+  DEPOSIT
+  FINAL
+  FULL
+}
+
+enum NotificationType {
+  BOOKING_CREATED
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  BOOKING_REMINDER
+  PAYMENT_RECEIVED
+  REVIEW_RECEIVED
+  PROMOTION
+  SYSTEM
+}
+
+// ============== MODELS ==============
+
+model User {
+  id            String        @id @default(uuid())
+  email         String?       @unique
+  phone         String?       @unique
+  password      String?
+  name          String?
+  avatar        String?
+
+  // OAuth IDs
+  googleId      String?       @unique
+  facebookId    String?       @unique
+  zaloId        String?       @unique
+
+  authProvider  AuthProvider  @default(LOCAL)
+  role          Role          @default(CUSTOMER)
+  isVerified    Boolean       @default(false)
+  isActive      Boolean       @default(true)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relations
+  staff               Staff?
+  bookings            Booking[]
+  reviews             Review[]
+  ownedClinics        Clinic[]            @relation("ClinicOwner")
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  notifications       Notification[]
+  favorites           UserFavoriteClinic[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceInfo  String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
+
+model Clinic {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  address     String
+  city        String
+  district    String
+  ward        String?
+  latitude    Float?
+  longitude   Float?
+  phone       String
+  email       String?
+
+  // Business hours
+  openTime    String    @default("08:30")
+  closeTime   String    @default("20:30")
+  workingDays String[]  @default(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
+
+  // Media
+  logo        String?
+  coverImage  String?
+  images      String[]
+
+  // Settings
+  isActive    Boolean   @default(true)
+
+  // Relations
+  ownerId     String
+  owner       User      @relation("ClinicOwner", fields: [ownerId], references: [id])
+  staff       Staff[]
+  services    Service[]
+  bookings    Booking[]
+  reviews     Review[]
+  favoritedBy UserFavoriteClinic[]
+
+  // Payment settings
+  bankCode    String?
+  bankAccount String?
+  bankName    String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("clinics")
+}
+
+model Service {
+  id          String            @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal           @db.Decimal(10, 0)
+  duration    Int               // Minutes
+  category    TreatmentCategory
+  image       String?
+  isActive    Boolean           @default(true)
+  order       Int               @default(0)
+
+  clinicId    String
+  clinic      Clinic            @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  bookingServices BookingService[]
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("services")
+}
+
+model Staff {
+  id           String         @id @default(uuid())
+  position     StaffPosition
+  bio          String?
+  rating       Float          @default(5.0)
+  totalReviews Int            @default(0)
+  isActive     Boolean        @default(true)
+
+  userId       String         @unique
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  clinicId     String
+  clinic       Clinic         @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  schedules    StaffSchedule[]
+  bookings     Booking[]
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("staff")
+}
+
+model StaffSchedule {
+  id          String   @id @default(uuid())
+  staffId     String
+  staff       Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  dayOfWeek   Int      // 0-6 (Sunday-Saturday)
+  startTime   String   // "08:30"
+  endTime     String   // "20:30"
+  isOff       Boolean  @default(false)
+
+  @@unique([staffId, dayOfWeek])
+  @@map("staff_schedules")
+}
+
+model Booking {
+  id              String          @id @default(uuid())
+  bookingCode     String          @unique
+
+  customerId      String
+  customer        User            @relation(fields: [customerId], references: [id])
+
+  clinicId        String
+  clinic          Clinic          @relation(fields: [clinicId], references: [id])
+
+  staffId         String?
+  staff           Staff?          @relation(fields: [staffId], references: [id])
+
+  // Booking time
+  date            DateTime        @db.Date
+  timeSlot        String          // "09:00"
+  endTime         String          // "09:45"
+
+  // Services
+  services        BookingService[]
+  totalDuration   Int             // Total minutes
+  totalAmount     Decimal         @db.Decimal(10, 0)
+
+  // Status
+  status          BookingStatus   @default(PENDING)
+
+  // Payment
+  paymentStatus   PaymentStatus   @default(UNPAID)
+  paymentMethod   PaymentMethod?
+  payments        Payment[]
+
+  // Customer notes
+  note            String?
+
+  // Cancellation
+  cancelReason    String?
+  cancelledAt     DateTime?
+  cancelledBy     String?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  review          Review?
+
+  @@index([date])
+  @@index([status])
+  @@index([customerId])
+  @@index([clinicId])
+  @@map("bookings")
+}
+
+model BookingService {
+  id          String   @id @default(uuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id])
+
+  price       Decimal  @db.Decimal(10, 0)
+  duration    Int
+
+  @@map("booking_services")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+
+  bookingId       String
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  amount          Decimal       @db.Decimal(10, 0)
+  method          PaymentMethod
+  type            PaymentType   @default(FULL)
+
+  // VietQR specific
+  qrCode          String?
+  qrContent       String?
+  bankCode        String?
+  bankAccount     String?
+
+  // Sepay webhook data
+  sepayTransId    String?       @unique
+  sepayRef        String?
+
+  status          PaymentStatus @default(PENDING)
+
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([bookingId])
+  @@map("payments")
+}
+
+model Review {
+  id          String   @id @default(uuid())
+
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  customerId  String
+  customer    User     @relation(fields: [customerId], references: [id])
+
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+
+  rating      Int      // 1-5
+  comment     String?
+  images      String[]
+
+  // Response from clinic
+  reply       String?
+  repliedAt   DateTime?
+
+  isVisible   Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("reviews")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        NotificationType
+  title       String
+  message     String
+  data        Json?
+
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+
+  createdAt   DateTime         @default(now())
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model UserFavoriteClinic {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, clinicId])
+  @@map("user_favorite_clinics")
+}
